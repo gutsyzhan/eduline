@@ -15,6 +15,7 @@ import os, sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
+sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -42,9 +43,11 @@ INSTALLED_APPS = [
     'courses',
     'organization',
     'operation',
+    'xadmin',
+    'crispy_forms'
 ]
 
-AUTH_USER_MODEL='users.UserProfile'
+AUTH_USER_MODEL = 'users.UserProfile'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -114,15 +117,18 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# 将语言修改为中文
+LANGUAGE_CODE = 'zh-hans'
 
-TIME_ZONE = 'UTC'
+# 将时区修改为上海
+TIME_ZONE = 'Asia/Shanghai'
+
+# 数据库存储使用时间，True时间会被存为UTC的时间。所以采用False
+USE_TZ = False
 
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
