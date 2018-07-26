@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from extra_apps import xadmin
+import xadmin
 
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
