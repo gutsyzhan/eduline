@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'organization',
     'operation',
     'xadmin',
-    'crispy_forms'
+    'crispy_forms',
+    'captcha'
 ]
 
 AUTH_USER_MODEL = 'users.UserProfile'
@@ -141,3 +142,14 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),  # 说明静态文件放在哪个目录,记住这里只能用列表或者元组，单一一个元组需要用,结尾
 ]
+
+
+# 发送邮箱验证的配置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sina.cn'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'licheetools@sina.cn'
+EMAIL_HOST_PASSWORD = "zcc950929"
+EMAIL_USE_TLS = False
+EMAIL_FROM = 'licheetools@sina.cn'
+

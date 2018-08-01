@@ -6,7 +6,54 @@ from django.contrib.auth.backends import ModelBackend
 from .models import UserProfile
 from django.db.models import Q
 from django.views.generic import View
-from users.forms import LoginForm
+from users.forms import LoginForm, RegisterForm
+from django.contrib.auth.hashers import make_password
+from users.utils.email_send import send_register_eamil
+
+
+# 用于实现用户注册的函数
+class RegisterView(View):
+    # get方法直接返回页面
+    def get(self, request):
+        register_form = RegisterForm()
+        return render(request, "register.html", {'register_form': register_form})
+
+    def post(self, request):
+        # 类的实例化需要一个字典dict参数，而前面我们就知道request.POST是一个QueryDict，所以可以直接传入POST中的信息
+        register_form = RegisterForm(request.POST)
+        if register_form.is_valid():
+            # username，password为前端页面name的返回值，取到用户名和密码我们就开始进行登录验证;取不到时为空。
+            user_name = request.POST.get("email", "")
+            pass_word = request.POST.get("password", "")
+            # 实例化一个user_profile对象，存入前端页面获取的值
+            user_profile = UserProfile()
+            user_profile.username = user_name
+            user_profile.email = user_name
+
+            # 对password进行加密并保存
+            user_profile.password = make_password(pass_word)
+            user_profile.save()
+            send_register_eamil(user_name, 'register')
+            pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # # 基于视图函数的实现用户的登录
@@ -83,4 +130,5 @@ class CustomBackend(ModelBackend):
                 return user
         except Exception as e:
             return None
+
 
