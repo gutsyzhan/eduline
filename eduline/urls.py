@@ -14,9 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
-from users.views import LoginView, RegisterView
+from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView
 import xadmin
 
 
@@ -33,5 +33,16 @@ urlpatterns = [
 
     # 验证码url
     path("captcha/", include('captcha.urls')),
+    # 激活用户url
+    re_path('active/(?P<active_code>.*)/', ActiveUserView.as_view(), name="user_active"),
+    # 找回密码url
+    path("forget/", ForgetPwdView.as_view(), name="forget_pwd"),
+
+    # 密码重置url
+    re_path('reset/(?P<active_code>.*)/', ResetView.as_view(), name="reset_pwd"),
+
+    # 修改密码url
+    path("modify/", ModifyPwdView.as_view(), name="modify_pwd"),
 
 ]
+

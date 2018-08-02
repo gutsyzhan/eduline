@@ -149,8 +149,8 @@
                             {{ register_form.captcha }}
                         </div>
                         <div class="error btns" id="jsEmailTips">
-                            {% for key,error in login_form.errors.items %}
-                            {{ error }}
+                            {% for key,error in register_form.errors.items %}
+                                {{ error }}
                             {% endfor %}
                             {{ msg }}
                         </div>

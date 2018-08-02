@@ -19,3 +19,16 @@ class RegisterForm(forms.Form):
     email = forms.CharField(required=True)  # 用户名不能为空
     password = forms.CharField(required=True, min_length=5)  # 密码不能为空，而且最小5位数
     captcha = CaptchaField(error_messages={"invalid": "验证码错误"})
+
+
+# 用户找回密码时的表单，注意字段与前端页面保持一致
+class ForgetForm(forms.Form):
+    email = forms.CharField(required=True)  # 用户名不能为空
+    captcha = CaptchaField(error_messages={"invalid": "验证码错误"})
+
+
+# 用户修改密码时的表单，注意字段与前端页面保持一致
+class ModifyPwdForm(forms.Form):
+    password1 = forms.CharField(required=True, min_length=5)  # 新密码不能为空
+    password2 = forms.CharField(required=True, min_length=5)  # 确认密码不能为空
+
