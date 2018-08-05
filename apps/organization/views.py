@@ -3,6 +3,8 @@ from django.views.generic.base import View
 # Create your views here.
 from .models import CityDict, CourseOrg
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
+from operation.forms import AnotherUserAskForm
 
 
 # 课程机构列表功能
@@ -61,4 +63,21 @@ class OrgView(View):
             "hot_orgs": hot_orgs,
             "sort": sort,
         })
+
+
+# 我要学习功能实现
+class AddUserAskView(View):
+    def post(self, request):
+        userask_form = AnotherUserAskForm(request.POST)
+        # 判断form是否有效
+        if userask_form.is_valid():
+            #  注意modelform和form的区别，modelform它有model的属性，而且有个参数commit，当它为真时会把数据存入到数据库
+            user_ask = userask_form.save(commit=True)
+
+            # 如果保存成功,则返回json,不过后面必须有content_type用于告诉浏览器返回的类型
+            return HttpResponse("{'status': 'success'}", content_type='application/json')
+        else:
+            # 如果保存失败，则返回json,并将form的错误信息通过msg传递到前端进行显示
+            return HttpResponse("{'status': 'fail', 'msg':{0}}".format(userask_form.errors), content_type='application/json')
+
 
