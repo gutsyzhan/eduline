@@ -52,5 +52,8 @@ urlpatterns = [
 
     # 配置文件上传的访问处理url
     re_path('media/(?P<path>.*)', serve, {"document_root": MEDIA_ROOT}),
+
+    # 课程相关应用path配置
+    path("course/", include('courses.urls', namespace="course")),
 ]
 

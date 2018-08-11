@@ -27,6 +27,14 @@ class Course(models.Model):
         verbose_name = "课程"
         verbose_name_plural = verbose_name
 
+    def get_zj_nums(self):
+        # 获取课程章节数
+        return self.lesson_set.all().count()
+
+    def get_learn_users(self):
+        # 获取学习用户数
+        return self.usercourse_set.all()[:5]
+
     def __str__(self):
         return self.name
 

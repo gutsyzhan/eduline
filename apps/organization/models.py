@@ -39,6 +39,10 @@ class CourseOrg(models.Model):
         verbose_name = "课程机构"
         verbose_name_plural = verbose_name
 
+    def get_teacher_nums(self):
+        # 获取教师数
+        return self.teacher_set.all().count()
+
     def __str__(self):
         return self.name   # 这里很重要，否则在后台就显示不出Meta信息
 
