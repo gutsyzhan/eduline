@@ -32,3 +32,9 @@ class ModifyPwdForm(forms.Form):
     password1 = forms.CharField(required=True, min_length=5)  # 新密码不能为空
     password2 = forms.CharField(required=True, min_length=5)  # 确认密码不能为空
 
+
+# 激活时验证码实现
+class ActiveForm(forms.Form):
+    # 激活时不需要对邮箱的密码做验证
+    # 应用验证码，自定义错误输出key必须与异常一样
+    captcha = CaptchaField(error_messages={"invalid": u"验证码错误"})

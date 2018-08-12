@@ -37,12 +37,12 @@ urlpatterns = [
     # 验证码url
     path("captcha/", include('captcha.urls')),
     # 激活用户url
-    re_path('active/(?P<active_code>.*)/', ActiveUserView.as_view(), name="user_active"),
+    re_path('active/(?P<active_code>\d+)/', ActiveUserView.as_view(), name="user_active"),
     # 找回密码url
     path("forget/", ForgetPwdView.as_view(), name="forget_pwd"),
 
     # 密码重置url
-    re_path('reset/(?P<active_code>.*)/', ResetView.as_view(), name="reset_pwd"),
+    re_path('reset/(?P<active_code>\d+)/', ResetView.as_view(), name="reset_pwd"),
 
     # 修改密码url
     path("modify/", ModifyPwdView.as_view(), name="modify_pwd"),
@@ -51,7 +51,7 @@ urlpatterns = [
     path("org/", include('organization.urls', namespace="org")),
 
     # 配置文件上传的访问处理url
-    re_path('media/(?P<path>.*)', serve, {"document_root": MEDIA_ROOT}),
+    re_path('media/(?P<path>\d+)', serve, {"document_root": MEDIA_ROOT}),
 
     # 课程相关应用path配置
     path("course/", include('courses.urls', namespace="course")),

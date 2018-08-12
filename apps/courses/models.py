@@ -1,12 +1,13 @@
 from django.db import models
 from datetime import datetime
 # Create your models here.
-from organization.models import CourseOrg
+from organization.models import CourseOrg, Teacher
 
 
 # 课程信息
 class Course(models.Model):
     course_org = models.ForeignKey(CourseOrg,  on_delete=models.CASCADE, verbose_name="课程机构", null=True, blank=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, verbose_name="讲师", null=True, blank=True)
     name = models.CharField(max_length=50, verbose_name="课程名")
     desc = models.CharField(max_length=300, verbose_name="课程描述")
     detail = models.TextField(max_length=500, verbose_name="课程详情")
@@ -35,6 +36,10 @@ class Course(models.Model):
         # 获取学习用户数
         return self.usercourse_set.all()[:5]
 
+    def get_course_lesson(self):
+        # 获取课程所有章节
+        return self.lesson_set.all()
+
     def __str__(self):
         return self.name
 
@@ -53,6 +58,10 @@ class Lesson(models.Model):
 
     def __str__(self):
         return '<<{0}>>课程的章节》{1}'.format(self.course, self.name)   # return self.name也是可以的
+
+    def get_lesson_video(self):
+        # 获取章节视频信息
+        return self.video_set.all()
 
 
 # 视频信息

@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.views.generic.base import View
 # Create your views here.
-from .models import Course
+from .models import Course, CourseResource, Video
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
-from operation.models import UserFavorite
+from operation.models import UserFavorite, CourseComments, UserCourse
+from django.http import HttpResponse
+from utils.mixin_utils import LoginRequiredMixin
 
 
 # 课程列表页
@@ -73,4 +75,112 @@ class CourseDetailView(View):
             "relate_courses": relate_courses,
             "has_fav_course": has_fav_course,
             "has_fav_org": has_fav_org,
+        })
+
+
+# 课程章节信息
+class CourseInfoView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    def get(self, request, course_id):
+        course = Course.objects.get(id=int(course_id))
+        all_resources = CourseResource.objects.filter(course=course)
+
+        # 查询用户是否已经开始学习了该课程，如果没有则开始学习
+        user_courses = UserCourse.objects.filter(user=request.user, course=course)
+        if not user_courses:
+            user_course = UserCourse(user=request.user, course=course)
+            course.students += 1
+            course.save()
+            user_course.save()
+
+        # 取出所有选过这门课的学生
+        user_courses = UserCourse.objects.filter(course=course)
+        # 取出所有选过这门课的学生的id,采用递归表达式形式
+        user_ids = [user_course.user.id for user_course in user_courses]
+        # 取出刚才那些学生选过的所有的课程
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        # 取出刚才那些学生选过的所有的课程的id,同样采用递归表达式形式
+        course_ids = [all_user_course.course_id for all_user_course in all_user_courses]
+        # 取出学过该课程用户学过的其他课程
+        relate_courses = Course.objects.filter(id__in=course_ids).order_by("-click_nums")[:5]
+        return render(request, "course-video.html", {
+            "course": course,
+            "all_resources": all_resources,
+            "relate_courses": relate_courses,
+        })
+
+
+# 课程评论页面
+class CourseCommentView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    def get(self, request, course_id):
+        course = Course.objects.get(id=int(course_id))
+        all_resources = CourseResource.objects.filter(course=course)
+        all_comments = CourseComments.objects.all()
+        return render(request, "course-comment.html", {
+            "course": course,
+            "all_resources": all_resources,
+            "all_comments": all_comments,
+        })
+
+
+# 用户增加课程评论
+class AddCommentView(View):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            # 未登录时页面提示未登录，并跳转到登录页面
+            return HttpResponse('{"status":"fail", "msg":"用户未登录"}', content_type='application/json')
+        course_id = request.POST.get("course_id", 0)
+        comments = request.POST.get("comments", '')
+        if int(course_id) >0 and comments:
+            course_comments = CourseComments()
+            # get方法只能取出一条数据，如果有多条则抛出异常而且没有数据也抛异常
+            # filter方法可以取一个列表出来（可以遍历的queryset），没有数据返回空的queryset，是不会抛异常的
+            course = Course.objects.get(id=int(course_id))
+            course_comments.course = course
+            course_comments.comment = comments
+            course_comments.user = request.user
+            course_comments.save()
+            return HttpResponse('{"status":"success", "msg":"评论成功"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail", "msg":"评论失败"}', content_type='application/json')
+
+
+# 视频播放页面
+class VideoPlayView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    def get(self, request, video_id):
+        video = Video.objects.get(id=int(video_id))
+        course = video.lesson.course
+        all_resources = CourseResource.objects.filter(course=course)
+        # 查询用户是否已经开始学习了该课程，如果没有则开始学习
+        user_courses = UserCourse.objects.filter(user=request.user, course=course)
+        if not user_courses:
+            user_course = UserCourse(user=request.user, course=course)
+            course.students += 1
+            course.save()
+            user_course.save()
+
+        # 取出所有选过这门课的学生
+        user_courses = UserCourse.objects.filter(course=course)
+        # 取出所有选过这门课的学生的id,采用递归表达式形式
+        user_ids = [user_course.user.id for user_course in user_courses]
+        # 取出刚才那些学生选过的所有的课程
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        # 取出刚才那些学生选过的所有的课程的id,同样采用递归表达式形式
+        course_ids = [all_user_course.course_id for all_user_course in all_user_courses]
+        # 取出学过该课程用户学过的其他课程
+        relate_courses = Course.objects.filter(id__in=course_ids).order_by("-click_nums")[:5]
+
+        return render(request, "course-play.html", {
+            "course": course,
+            "all_resources": all_resources,
+            "relate_courses": relate_courses,
+            "video": video,
         })

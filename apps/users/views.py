@@ -9,6 +9,7 @@ from django.views.generic import View
 from users.forms import LoginForm, RegisterForm, ForgetForm, ModifyPwdForm
 from django.contrib.auth.hashers import make_password
 from users.utils.email_send import send_register_eamil
+from .forms import ActiveForm
 
 
 # 用于实现用户注册的函数
@@ -26,22 +27,24 @@ class RegisterView(View):
             if UserProfile.objects.filter(email=user_name):
                 # register_form回填信息必须有，msg是信息提示
                 return render(request, 'register.html', {'register_form': register_form}, {'msg': '该邮箱已被注册过了'})
-            else:
-                # password为前端页面name的返回值，取到用户名和密码我们就开始进行登录验证;取不到时为空。
-                pass_word = request.POST.get("password", "")
-                # 实例化一个user_profile对象，存入前端页面获取的值
-                user_profile = UserProfile()
-                user_profile.username = user_name
-                user_profile.email = user_name
 
-                # 默认激活状态为False，也就是未激活
-                user_profile.is_active = False
+            # password为前端页面name的返回值，取到用户名和密码我们就开始进行登录验证;取不到时为空。
+            pass_word = request.POST.get("password", "")
+            # 实例化一个user_profile对象，存入前端页面获取的值
+            user_profile = UserProfile()
+            user_profile.username = user_name
+            user_profile.email = user_name
 
-                # 对password进行加密并保存
-                user_profile.password = make_password(pass_word)
-                user_profile.save()
-                send_register_eamil(user_name, 'register')
-                pass
+            # 默认激活状态为False，也就是未激活
+            user_profile.is_active = False
+
+            # 对password进行加密并保存
+            user_profile.password = make_password(pass_word)
+            user_profile.save()
+            send_register_eamil(user_name, 'register')
+            return render(request, "login.html", )
+        else:
+            return render(request, "register.html", {"register_form": register_form})
 
 
 # 用于实现用户激活操作的函数
@@ -49,18 +52,20 @@ class ActiveUserView(View):
     def get(self, request, active_code):
         # 用于查询邮箱验证码是否存在
         all_record = EmailVerifyRecord.objects.filter(code=active_code)
+        # 如果不为空也就是有用户
+        active_form = ActiveForm(request.GET)
         if all_record:
             for record in all_record:
                 # 获取到对应的邮箱
                 email = record.email
                 # 查找到邮箱对应的用户
-                user = UserProfile.objects.filter(email=email)
+                user = UserProfile.objects.get(email=email)
                 user.is_active = True
                 user.save()
+                # 激活成功跳转到登录页面
+                return render(request, "login.html", )
         else:
-            return render(request, "active_fail.html")
-        # 激活成功跳转到登录页面
-        return render(request, "login.html")
+            return render(request, "register.html", {"msg": "您的激活链接无效", "active_form": active_form})
 
 
 # 用于实现用户忘记密码（找回密码）的函数
