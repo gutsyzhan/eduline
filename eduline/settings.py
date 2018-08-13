@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'captcha',
     'pure_pagination',
 ]
-
+# 此处重载是为了使我们的UserProfile生效
 AUTH_USER_MODEL = 'users.UserProfile'
 
 MIDDLEWARE = [
@@ -96,7 +96,7 @@ DATABASES = {
         'NAME': 'eduline',
         'USER': 'root',
         'PASSWORD': 'root',
-        'HOST':'127.0.0.1'
+        'HOST': '127.0.0.1'
     }
 }
 

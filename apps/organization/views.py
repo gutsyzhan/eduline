@@ -243,5 +243,65 @@ class AddFavView(View):
                 return HttpResponse('{"status":"fail", "msg":"收藏出错"}', content_type='application/json')
 
 
+# 课程讲师列表页
+class TeacherListView(View):
+    def get(self, request):
+        # 取出所有的讲师
+        all_teachers = Teacher.objects.all()
+
+        # 人气排名
+        sort = request.GET.get('sort', '')
+        if sort:
+            if sort == "hot":
+                all_teachers = all_teachers.order_by("-click_nums")
+
+        # 讲师排行榜
+        sorted_teacher = Teacher.objects.all().order_by("-fav_nums")[:5]
+
+        # 统计课程讲师的数量
+        teacher_nums = all_teachers.count()
+
+        # 对课程讲师进行分页,尝试获取前端get请求传递过来的page参数
+        # 如果是不合法的配置参数则默认返回第一页
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        # 这里指从all_org中取五个出来，每页显示6个
+        p = Paginator(all_teachers, 6, request=request)
+
+        teachers = p.page(page)
+
+        return render(request, "teachers-list.html", {
+            "all_teachers": teachers,
+            "sorted_teacher": sorted_teacher,
+            "sort": sort,
+            "teacher_nums": teacher_nums,
+        })
 
 
+# 讲师详情页
+class TeacherDetailView(View):
+    def get(self, request, teacher_id):
+        # 取出当前id的讲师信息
+        teacher = Teacher.objects.get(id=int(teacher_id))
+        # 前面的teacher是数据库里面的字段，后一个则是上面取到的teacher
+        all_courses = Course.objects.filter(teacher=teacher)
+
+        has_fav_teacher = False
+        if UserFavorite.objects.filter(user=request.user, fav_type=3, fav_id=teacher.id):
+            has_fav_teacher = True
+        has_fav_org = False
+        if UserFavorite.objects.filter(user=request.user, fav_type=2, fav_id=teacher.org.id):
+            has_fav_org = True
+
+        # 讲师排行榜
+        sorted_teacher = Teacher.objects.all().order_by("-fav_nums")[:5]
+
+        return render(request, "teacher-detail.html", {
+            "teacher": teacher,
+            "all_courses": all_courses,
+            "sorted_teacher": sorted_teacher,
+            "has_fav_teacher": has_fav_teacher,
+            "has_fav_org": has_fav_org,
+        })
