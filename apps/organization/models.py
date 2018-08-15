@@ -70,3 +70,6 @@ class Teacher(models.Model):
     def __str__(self):
         return self.name   # 这里很重要，否则在后台就显示不出Meta信息
 
+    def get_course_nums(self):
+        return self.course_set.all().count()
+

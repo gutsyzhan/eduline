@@ -13,6 +13,10 @@ from .forms import ActiveForm, ImageUploadForm, UserInfoForm
 from utils.mixin_utils import LoginRequiredMixin
 from django.http import HttpResponse
 import json
+from operation.models import UserCourse, UserFavorite, UserMessage
+from organization.models import CourseOrg, Teacher
+from courses.models import Course
+from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
 
 # 用于实现用户注册的函数
@@ -44,7 +48,14 @@ class RegisterView(View):
             # 对password进行加密并保存
             user_profile.password = make_password(pass_word)
             user_profile.save()
-            send_register_eamil(user_name, 'register')
+
+            # 写入欢迎注册的信息
+            user_message = UserMessage()
+            user_message.user = user_profile.id
+            user_message.message = "欢迎注册慕海学习网！"
+            user_message.save()
+
+            send_register_email(user_name, 'register')
             return render(request, "login.html", )
         else:
             return render(request, "register.html", {"register_form": register_form})
@@ -82,7 +93,7 @@ class ForgetPwdView(View):
         if forget_form.is_valid():
             email = request.POST.get('email', '')
             # 发送找回密码的邮件
-            send_register_eamil(email, 'forget')
+            send_register_email(email, 'forget')
             return render(request, 'send_success.html')
         else:
             return render(request, "forgetpwd.html", {'forget_form': forget_form})
@@ -301,4 +312,93 @@ class UpdateEmailView(LoginRequiredMixin, View):
             return HttpResponse('{"email":"验证码无效"}', content_type='application/json')
 
 
+# 用户个人中心我的课程函数
+class MyCourseView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
 
+    def get(self, request):
+        user_courses = UserCourse.objects.filter(user=request.user)
+
+        return render(request, "usercenter-mycourse.html", {
+            "user_courses": user_courses,
+
+        })
+
+
+# 我收藏的课程机构函数
+class MyFavOrgView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def get(self, request):
+        org_list = []
+        fav_orgs = UserFavorite.objects.filter(user=request.user, fav_type=2)
+        for fav_org in fav_orgs:
+            org_id = fav_org.fav_id
+            org = CourseOrg.objects.get(id=org_id)
+            org_list.append(org)
+        return render(request, "usercenter-fav-org.html", {
+            "org_list": org_list,
+
+        })
+
+
+# 我收藏的授课讲师函数
+class MyFavTeacherView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def get(self, request):
+        teacher_list = []
+        fav_teachers = UserFavorite.objects.filter(user=request.user, fav_type=3)
+        for fav_teacher in fav_teachers:
+            teacher_id = fav_teacher.fav_id
+            teacher = Teacher.objects.get(id=teacher_id)
+            teacher_list.append(teacher)
+        return render(request, "usercenter-fav-teacher.html", {
+            "teacher_list": teacher_list,
+
+        })
+
+
+# 我收藏的公开课程函数
+class MyFavCourseView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def get(self, request):
+        course_list = []
+        fav_courses = UserFavorite.objects.filter(user=request.user, fav_type=1)
+        for fav_course in fav_courses:
+            course_id = fav_course.fav_id
+            course = Course.objects.get(id=course_id)
+            course_list.append(course)
+        return render(request, "usercenter-fav-course.html", {
+            "course_list": course_list,
+        })
+
+
+# 我的消息函数
+class MyMessageView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def get(self, request):
+        # 取出所有的信息
+        all_messages = UserMessage.objects.filter(user=request.user.id)
+
+        # 对消息进行分页,尝试获取前端get请求传递过来的page参数
+        # 如果是不合法的配置参数则默认返回第一页
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        # 这里指从all_courses中取出来，每页显示9个
+        p = Paginator(all_messages, 9, request=request)
+
+        messages = p.page(page)
+
+        return render(request, "usercenter-message.html", {
+            "messages": messages,
+        })
