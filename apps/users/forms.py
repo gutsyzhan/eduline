@@ -6,6 +6,7 @@
 
 from django import forms
 from captcha.fields import CaptchaField   # 引入验证码field
+from .models import UserProfile
 
 
 # 用户登录表单的验证，注意字段与前端页面保持一致
@@ -38,3 +39,21 @@ class ActiveForm(forms.Form):
     # 激活时不需要对邮箱的密码做验证
     # 应用验证码，自定义错误输出key必须与异常一样
     captcha = CaptchaField(error_messages={"invalid": u"验证码错误"})
+
+
+# 个人用户修改头像
+class ImageUploadForm(forms.ModelForm):
+    # 除了继承现有的字段还可以新增字段
+    class Meta:
+        model = UserProfile
+        # 自定义需要验证的字段
+        fields = ["image"]
+
+
+# 用户信息修改表单提交
+class UserInfoForm(forms.ModelForm):
+    # 除了继承现有的字段还可以新增字段
+    class Meta:
+        model = UserProfile
+        # 自定义需要验证的字段
+        fields = ["nick_name", "birday", "gender", "address", "mobile"]

@@ -6,6 +6,7 @@ from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 from operation.models import UserFavorite, CourseComments, UserCourse
 from django.http import HttpResponse
 from utils.mixin_utils import LoginRequiredMixin
+from django.db.models import Q
 
 
 # 课程列表页
@@ -15,6 +16,11 @@ class CourseListView(View):
 
         # 热门课程推荐
         hot_courses = Course.objects.all().order_by("-click_nums")[:3]
+
+        # 搜索功能
+        search_keywords =  request.GET.get('keywords', '')
+        if search_keywords:
+            all_courses = all_courses.filter(Q(name__icontains=search_keywords)| Q(desc__icontains=search_keywords)| Q(detail__icontains=search_keywords))
 
         # 最热门和参与人数排名
         # 最热门hot根据点击数来判断
@@ -40,6 +46,7 @@ class CourseListView(View):
             "all_courses": courses,
             "sort": sort,
             "hot_courses": hot_courses,
+            "search_keywords": search_keywords,
         })
 
 

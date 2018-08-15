@@ -23,7 +23,7 @@ urlpatterns = [
     # 机构课程详情页url
     re_path('desc/(?P<org_id>\d+)/', OrgDescView.as_view(), name="org_desc"),
     # 机构讲师详情页url
-    re_path('teacher/(?P<org_id>\d+)/', OrgTeacherView.as_view(), name="org_teacher"),
+    re_path('org_teacher/(?P<org_id>\d+)/', OrgTeacherView.as_view(), name="org_teacher"),
 
     # 用户收藏与取消收藏url
     path("add_fav/", AddFavView.as_view(), name="add_fav"),

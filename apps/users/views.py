@@ -8,8 +8,11 @@ from django.db.models import Q
 from django.views.generic import View
 from users.forms import LoginForm, RegisterForm, ForgetForm, ModifyPwdForm
 from django.contrib.auth.hashers import make_password
-from users.utils.email_send import send_register_eamil
-from .forms import ActiveForm
+from utils.email_send import send_register_email
+from .forms import ActiveForm, ImageUploadForm, UserInfoForm
+from utils.mixin_utils import LoginRequiredMixin
+from django.http import HttpResponse
+import json
 
 
 # 用于实现用户注册的函数
@@ -127,10 +130,6 @@ class ModifyPwdView(View):
             return render(request, "password_reset.html", {"email": email, "modify_form": modify_form})
 
 
-
-
-
-
 # # 基于视图函数的实现用户的登录
 # # 当我们配置的url被这个view处理时，将会自动传入request对象.
 # def user_login(request):
@@ -199,7 +198,7 @@ class CustomBackend(ModelBackend):
     def authenticate(self, username=None, password=None, **kwargs):
         try:
             # 我们不希望用户存在两个，也就是说通过某个用户名和某个邮箱登录的都是指向同一用户，所以采用Q来进行并集查询
-            user = UserProfile.objects.get(Q(username=username)|Q(email=username))
+            user = UserProfile.objects.get(Q(username=username)| Q(email=username))
 
             # 记住不能使用password==password，因为密码都被django的后台给加密了
 
@@ -208,5 +207,98 @@ class CustomBackend(ModelBackend):
                 return user
         except Exception as e:
             return None
+
+
+# 用户个人信息
+class UserInfoView(LoginRequiredMixin , View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def get(self, request):
+        return render(request, "usercenter-info.html", {
+
+        })
+
+    def post(self, request):
+        user_info_form = UserInfoForm(request.POST, instance=request.user)
+        if user_info_form.is_valid():
+            user_info_form.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse(json.dumps(user_info_form.errors), content_type='application/json')
+
+
+# 用户头像修改
+class ImageUploadView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def post(self, request):
+        image_form = ImageUploadForm(request.POST, request.FILES, instance=request.user)
+        if image_form.is_valid():
+            image_form.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail"}', content_type='application/json')
+
+
+# 用于个人中心修改密码的函数（已经登录）
+class UpdatePwdView(View):
+    def post(self, request):
+        modify_form = ModifyPwdForm(request.POST)
+        if modify_form.is_valid():
+            pwd1 = request.POST.get("password1", '')
+            pwd2 = request.POST.get("password2", '')
+            # 如果前后两次密码不相等，那么回填信息并返回错误提示
+            if pwd1 != pwd2:
+                return HttpResponse('{"status":"fail", "msg":"密码不一致"}', content_type='application/json')
+            # 如果前后两次密码相等，那么进入我们的密码修改保存
+            # 取出用户信息
+            user = request.user
+            # 随意取出一个密码并将其进行加密
+            user.password = make_password(pwd1)
+            # 将更新后的用户信息保存到数据库里面
+            user.save()
+            # 密码重置成功以后，跳转到登录页面
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"status":"fail", "msg":"填写错误请检查"}', content_type='application/json')
+
+
+# 用于个人中心发送邮箱验证码的函数
+class SendEmailCodeView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def get(self, request):
+        # 取出待发送的邮件
+        email = request.GET.get("email", '')
+
+        if UserProfile.objects.filter(email=email):
+            return HttpResponse('{"email":"邮箱已经存在"}', content_type='application/json')
+        send_register_email(email, "update_email")
+
+        return HttpResponse('{"status":"success"}', content_type='application/json')
+
+
+# 用于个人中心修改邮箱的函数
+class UpdateEmailView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'next'
+
+    def post(self, request):
+        email = request.POST.get("email", '')
+        code = request.POST.get("code", '')
+
+        existed_records = EmailVerifyRecord.objects.filter(email=email, code=code, send_type="update_email")
+        if existed_records:
+            # request.user.email = email
+            user = request.user
+            user.email = email
+            user.save()
+            return HttpResponse('{"status":"success"}', content_type='application/json')
+        else:
+            return HttpResponse('{"email":"验证码无效"}', content_type='application/json')
+
 
 

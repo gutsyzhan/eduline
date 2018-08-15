@@ -8,6 +8,7 @@ from operation.forms import AnotherUserAskForm
 from courses.models import Course
 from operation.models import UserFavorite
 from organization.models import Teacher
+from django.db.models import Q
 
 
 # 课程机构列表功能
@@ -17,6 +18,12 @@ class OrgView(View):
         all_citys = CityDict.objects.all()
         # 查找所有的课程机构信息
         all_orgs = CourseOrg.objects.all()
+
+        # 搜索功能
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            all_orgs = all_orgs.filter(
+                Q(name__icontains=search_keywords) | Q(desc__icontains=search_keywords))
 
         # 授课机构的排名
         hot_orgs = all_orgs.order_by("click_nums")[:3]
@@ -65,6 +72,7 @@ class OrgView(View):
             "category": category,
             "hot_orgs": hot_orgs,
             "sort": sort,
+            "search_keywords": search_keywords,
         })
 
 
@@ -249,6 +257,12 @@ class TeacherListView(View):
         # 取出所有的讲师
         all_teachers = Teacher.objects.all()
 
+        # 搜索功能
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            all_teachers = all_teachers.filter(Q(name__icontains=search_keywords) | Q(work_company__icontains=search_keywords)|
+                                               Q(work_position__icontains=search_keywords))
+
         # 人气排名
         sort = request.GET.get('sort', '')
         if sort:
@@ -277,6 +291,7 @@ class TeacherListView(View):
             "sorted_teacher": sorted_teacher,
             "sort": sort,
             "teacher_nums": teacher_nums,
+            "search_keywords": search_keywords,
         })
 
 
@@ -305,3 +320,4 @@ class TeacherDetailView(View):
             "has_fav_teacher": has_fav_teacher,
             "has_fav_org": has_fav_org,
         })
+
