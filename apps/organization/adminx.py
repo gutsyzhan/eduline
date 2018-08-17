@@ -19,6 +19,8 @@ class CourseOrgAdmin(object):
     list_display = ['name', 'desc', 'click_nums', 'fav_nums', 'image', 'address', 'city', 'add_time']  # 一次显示你想出现的多行数据
     search_fields = ['name', 'desc', 'click_nums', 'fav_nums', 'image', 'address', 'city']  # 查询你想要的数据，记住尽量不要把时间放进去
     list_filter = ['name', 'desc', 'click_nums', 'fav_nums', 'image', 'address', 'city', 'add_time']  # 过滤器,__name是外键的name字段，只写course则无法在过滤器中显示。
+    # 搜索框，当课程数据量过大时，有课程指向它，会以ajax方式加载
+    relfield_style = 'fk-ajax'
 
 
 class TeacherAdmin(object):

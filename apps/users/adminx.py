@@ -12,7 +12,7 @@ from xadmin import views
 from .models import EmailVerifyRecord
 from .models import Banner
 from users.models import EmailVerifyRecord, Banner, UserProfile
-from courses.models import Course, CourseResource, Lesson, Video
+from courses.models import Course, CourseResource, Lesson, Video, BannerCourse
 from organization.models import CourseOrg, CityDict, Teacher
 from operation.models import CourseComments, UserMessage, UserFavorite, UserCourse, UserAsk
 from django.contrib.auth.models import Group, Permission
@@ -30,6 +30,7 @@ class EmailVerifyRecordAdmin(object):
     list_display = ['code', 'email', 'send_type', 'send_time']  # 一次显示你想出现的多行数据
     search_fields = ['code', 'email', 'send_type']  # 查询你想要的数据
     list_filter = ['code', 'email', 'send_type', 'send_time']  # 过滤器
+    model_icon = 'fa fa-user'
 
 
 class BannerAdmin(object):
@@ -46,11 +47,13 @@ class GlobalSettings(object):
     def get_site_menu(self):
         return (
                 {'title': '课程管理', 'menus': (
-                    {'title': '课程信息', 'url': self.get_model_url(Course, 'changelist')},
+                    {'title': '普通课程', 'url': self.get_model_url(Course, 'changelist')},
+                    {'title': '轮播课程', 'url': self.get_model_url(BannerCourse, 'changelist')},
                     {'title': '章节信息', 'url': self.get_model_url(Lesson, 'changelist')},
                     {'title': '视频信息', 'url': self.get_model_url(Video, 'changelist')},
                     {'title': '课程资源', 'url': self.get_model_url(CourseResource, 'changelist')},
                     {'title': '课程评论', 'url': self.get_model_url(CourseComments, 'changelist')},
+
                 )},
                 {'title': '机构管理', 'menus': (
                     {'title': '所在城市', 'url': self.get_model_url(CityDict, 'changelist')},

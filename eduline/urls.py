@@ -20,7 +20,7 @@ from django.views.generic import TemplateView
 from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView, LogoutView
 from users.views import IndexView
 from organization.views import OrgView
-from eduline.settings import MEDIA_ROOT, STATIC_ROOT
+from eduline.settings import MEDIA_ROOT
 import xadmin
 
 
@@ -59,8 +59,8 @@ urlpatterns = [
     # 配置文件上传的访问处理url
     re_path('media/(?P<path>.*)', serve, {"document_root": MEDIA_ROOT}),
 
-    # 配置静态文件上传的访问处理url
-    re_path('static/(?P<path>.*)', serve, {"document_root": STATIC_ROOT}),
+    # # 配置静态文件上传的访问处理url
+    # re_path('static/(?P<path>.*)', serve, {"document_root": STATIC_ROOT}),
 
 
     # 课程相关应用path配置
