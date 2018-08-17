@@ -25,9 +25,9 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 SECRET_KEY = '(cc=qi$l(j2_326+ue-b+)n4&40d%px%i%5zww&*c-m!sqo&t#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -141,9 +141,9 @@ USE_L10N = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),  # 说明静态文件放在哪个目录,记住这里只能用列表或者元组，单一一个元组需要用,结尾
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),  # 说明静态文件放在哪个目录,记住这里只能用列表或者元组，单一一个元组需要用,结尾
+# ]
 
 
 # 发送邮箱验证的配置
@@ -158,3 +158,6 @@ EMAIL_FROM = 'licheetools@sina.cn'
 # 设置我们上传文件的路径
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')

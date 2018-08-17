@@ -1,7 +1,7 @@
 from django.shortcuts import render
-
+from django.urls import reverse
 # Create your views here.
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.backends import ModelBackend
 from .models import UserProfile, EmailVerifyRecord
 from django.db.models import Q
@@ -11,12 +11,13 @@ from django.contrib.auth.hashers import make_password
 from utils.email_send import send_register_email
 from .forms import ActiveForm, ImageUploadForm, UserInfoForm
 from utils.mixin_utils import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 import json
 from operation.models import UserCourse, UserFavorite, UserMessage
 from organization.models import CourseOrg, Teacher
 from courses.models import Course
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
+from .models import Banner
 
 
 # 用于实现用户注册的函数
@@ -193,7 +194,7 @@ class LoginView(View):
                     # login 有两个参数：request和user。我们在请求的时候，request实际上是写进了一部分信息，然后在render的时候，这些信息也被返回前端页面从而完成用户登录
                     login(request, user)
                     # 页面跳转至网站首页 user request也会被带回到首页，显示登录状态
-                    return render(request, "index.html")
+                    return HttpResponseRedirect(reverse("index"))
                 else:
                     return render(request, "login.html", {'msg': '用户未激活！'})
             else:
@@ -202,6 +203,15 @@ class LoginView(View):
         # 所填写的字段信息不满足我们在LoginForm中所规定的要求，验证失败跳回login页面并重新输入信息
         else:
             return render(request, "login.html", {"login_form": login_form})
+
+
+# 用于实现用户首页登出的函数
+class LogoutView(View):
+    def get(self, request):
+        # 采用Django自带的logout函数来完成我们登出的功能
+        logout(request)
+        # 不采用之前的render，而是采用重定向返回到首页
+        return HttpResponseRedirect(reverse("index"))
 
 
 # 用于实现邮箱登录的函数
@@ -388,6 +398,12 @@ class MyMessageView(LoginRequiredMixin, View):
         # 取出所有的信息
         all_messages = UserMessage.objects.filter(user=request.user.id)
 
+        # 用户进入个人中心之后，清空未读消息
+        all_unread_mesages = UserMessage.objects.filter(user=request.user.id,has_read=False)
+        for unread_mesages in all_unread_mesages:
+            unread_mesages.has_read = True
+            unread_mesages.save()
+
         # 对消息进行分页,尝试获取前端get请求传递过来的page参数
         # 如果是不合法的配置参数则默认返回第一页
         try:
@@ -402,3 +418,44 @@ class MyMessageView(LoginRequiredMixin, View):
         return render(request, "usercenter-message.html", {
             "messages": messages,
         })
+
+
+# 慕海学习网首页函数
+class IndexView(View):
+    def get(self, request):
+        # 取出录播图只显示5个,并按照顺序排列
+        all_banners = Banner.objects.all().order_by("index")[:5]
+        # 取出轮播课程，但是只显示3个
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
+        # 取出非轮播课程，但是只显示6个
+        courses = Course.objects.filter(is_banner=False)[:6]
+        # 取出课程机构，但是只显示15个
+        course_orgs = CourseOrg.objects.all()[:15]
+        return render(request, "index.html", {
+            "all_banners": all_banners,
+            "banner_courses": banner_courses,
+            "courses": courses,
+            "course_orgs": course_orgs,
+        })
+
+
+# 404页面对应的处理函数
+def page_not_found(request):
+    from django.shortcuts import render_to_response
+    response = render_to_response("404.html", {
+
+    })
+    # 设置response的状态码
+    response.status_code = 404
+    return response
+
+
+# 500页面对应的处理函数
+def page_error(request):
+    from django.shortcuts import render_to_response
+    response = render_to_response("500.html", {
+
+    })
+    # 设置response的状态码
+    response.status_code = 500
+    return response

@@ -17,20 +17,26 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.static import serve
 from django.views.generic import TemplateView
-from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView
+from users.views import LoginView, RegisterView, ActiveUserView, ForgetPwdView, ResetView, ModifyPwdView, LogoutView
+from users.views import IndexView
 from organization.views import OrgView
-from eduline.settings import MEDIA_ROOT
+from eduline.settings import MEDIA_ROOT, STATIC_ROOT
 import xadmin
 
 
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     # 用''指代根目录，TemplateView.as_view可以将template转换为view
-    path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    # path('', TemplateView.as_view(template_name='index.html'), name='index'),
+    path('', IndexView.as_view(), name="index"),
     # 登录url
     # path('login/', TemplateView.as_view(template_name="login.html"), name="login")
     # path('login/', user_login, name="login")
     path('login/', LoginView.as_view(), name="login"),
+
+    # 登出url
+    path('logout/', LogoutView.as_view(), name="logout"),
+
     # 注册url
     path("register/", RegisterView.as_view(), name="register"),
 
@@ -53,12 +59,21 @@ urlpatterns = [
     # 配置文件上传的访问处理url
     re_path('media/(?P<path>.*)', serve, {"document_root": MEDIA_ROOT}),
 
+    # 配置静态文件上传的访问处理url
+    re_path('static/(?P<path>.*)', serve, {"document_root": STATIC_ROOT}),
+
+
     # 课程相关应用path配置
     path("course/", include('courses.urls', namespace="course")),
 
     # 用户个人中心应用path配置
     path("users/", include('users.urls', namespace="users")),
 
-
 ]
 
+
+# 全局404页面配置
+handler404 = 'users.views.page_not_found'
+
+# 全局500页面配置
+handler500 = 'users.views.page_error'

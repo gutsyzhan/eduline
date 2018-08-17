@@ -99,6 +99,9 @@ class OrgHomeView(View):
         # 根据id来获取课程机构
         course_org = CourseOrg.objects.get(id=int(org_id))
 
+        course_org.click_nums += 1
+        course_org.save()
+
         # 根据取到的课程机构直接获取它的所有课程，我们取3个
         all_courses = course_org.course_set.all()[:3]
 
@@ -300,6 +303,10 @@ class TeacherDetailView(View):
     def get(self, request, teacher_id):
         # 取出当前id的讲师信息
         teacher = Teacher.objects.get(id=int(teacher_id))
+
+        teacher.click_nums += 1
+        teacher.save()
+
         # 前面的teacher是数据库里面的字段，后一个则是上面取到的teacher
         all_courses = Course.objects.filter(teacher=teacher)
 
