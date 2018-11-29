@@ -8,14 +8,14 @@ Python3.6. + Django2.0 + Virtualenv + Mysql + Xadmin
 如果你的机器上只安装了Python3，那么命令如下：
 ```
 $ git clone https://github.com/licheetools/eduline.git
-$ cd edukline
+$ cd eduline
 $ pip install -r requirements.txt
 $ python manage.py runserver
 ```
 如果Python2与Python3兼有，请使用下面的命令：
 ```
 $ git clone https://github.com/licheetools/eduline.git
-$ cd edukline
+$ cd eduline
 $ pip3 install -r requirements.txt
 $ python3 manage.py runserver
 ```
