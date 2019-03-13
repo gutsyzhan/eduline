@@ -21,17 +21,15 @@ $ python3 manage.py runserver
 ```
 然后在浏览器地址输入：http://127.0.0.1:8000
 ## 教程地址
-关注简书博主：啃饼小白，或者直接查看主页：https://www.jianshu.com/u/f58202bc1644
+啃饼网：http://www.licheetools.top
 ## 关于博主
 努力与运动兼备~~~
-
-简书主页：https://www.jianshu.com/u/f58202bc1644
 
 个人博客：http://blog.licheetools.top
 
 啃饼网：http://www.licheetools.top
 
-QQ：2810706745（啃饼小白）
+QQ：2810706745（啃饼思录）
 
 微信公众号：啃饼思录
 
@@ -39,3 +37,4 @@ QQ：2810706745（啃饼小白）
  
  ## 版本更新
  2018.9.10 上传修复好的代码，对xadmin进行了必要的修改，同时修复网站访问不了的问题~~~
+ 2019.3.10 因部分代码存在问题，现关闭网站进行修改，具体再次上线，请期待~~~
